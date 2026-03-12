@@ -1,51 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RedWriter</title>
-    <link rel="stylesheet" href="popup.css" />
-  </head>
-  <body>
-    <div class="container">
-      <header class="header">
-        <h1 class="title">RedWriter</h1>
-        <p class="subtitle">Your Reddit writing assistant</p>
-      </header>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AdWrite Pro</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
 
-      <main class="main">
-        <section class="section">
-          <label class="label" for="draft">Draft</label>
-          <textarea
-            id="draft"
-            class="textarea"
-            placeholder="Write your Reddit post or comment here..."
-            rows="8"
-          ></textarea>
-        </section>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-logo">
+      <svg class="shield-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"/>
+        <path class="shield-check" d="M9 12l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div class="header-text">
+        <span class="app-name">AdWrite Pro</span>
+        <span class="app-tagline">Advanced Ad Blocker &amp; Web Protection</span>
+      </div>
+    </div>
+  </header>
 
-        <section class="section">
-          <label class="label">Options</label>
-          <div class="option-group">
-            <label class="option">
-              <input type="checkbox" id="spellcheck" checked />
-              <span>Spell check</span>
-            </label>
-            <label class="option">
-              <input type="checkbox" id="wordcount" checked />
-              <span>Show word count</span>
-            </label>
-          </div>
-          <p id="wordCountDisplay" class="word-count">0 words</p>
-        </section>
-      </main>
+  <!-- MAIN TOGGLE -->
+  <section class="power-section">
+    <div class="power-toggle-container">
+      <label class="toggle-switch power-toggle" for="mainToggle" aria-label="Toggle protection">
+        <input type="checkbox" id="mainToggle" checked />
+        <span class="slider"></span>
+      </label>
+      <p class="power-status active" id="powerStatus">Protection is ON</p>
+    </div>
+  </section>
 
-      <footer class="footer">
-        <button id="clearBtn" class="btn btn-secondary">Clear</button>
-        <button id="copyBtn" class="btn btn-primary">Copy to clipboard</button>
-      </footer>
+  <!-- STATS -->
+  <section class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <span class="stat-value" id="adsToday">247</span>
+        <span class="stat-label">Ads blocked today</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="adsTotal">14,382</span>
+        <span class="stat-label">Ads blocked total</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="trackingTotal">3,821</span>
+        <span class="stat-label">Tracking blocked</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="bandwidth">128 MB</span>
+        <span class="stat-label">Bandwidth saved</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- FILTER LISTS -->
+  <section class="filter-section">
+    <h2 class="section-title">Filter Lists</h2>
+
+    <div class="filter-row">
+      <span class="filter-name">EasyList</span>
+      <label class="toggle-switch" aria-label="Toggle EasyList">
+        <input type="checkbox" class="filter-toggle" checked />
+        <span class="slider"></span>
+      </label>
     </div>
 
-    <script src="popup.js"></script>
-  </body>
+    <div class="filter-row">
+      <span class="filter-name">EasyPrivacy</span>
+      <label class="toggle-switch" aria-label="Toggle EasyPrivacy">
+        <input type="checkbox" class="filter-toggle" checked />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="filter-row">
+      <span class="filter-name">Malware Domains</span>
+      <label class="toggle-switch" aria-label="Toggle Malware Domains">
+        <input type="checkbox" class="filter-toggle" checked />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="filter-row">
+      <span class="filter-name">Social Media Trackers</span>
+      <label class="toggle-switch" aria-label="Toggle Social Media Trackers">
+        <input type="checkbox" class="filter-toggle" />
+        <span class="slider"></span>
+      </label>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- WHITELIST -->
+  <section class="whitelist-section">
+    <h2 class="section-title">Whitelist</h2>
+    <div class="whitelist-row">
+      <button class="btn-whitelist" id="whitelistBtn">Whitelist this site</button>
+      <input
+        type="text"
+        class="whitelist-input"
+        id="whitelistInput"
+        placeholder="e.g. example.com"
+        aria-label="Enter a site to whitelist"
+      />
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ADVANCED SETTINGS (collapsible) -->
+  <section class="advanced-wrap">
+    <button class="advanced-trigger" id="advancedToggle" aria-expanded="false" aria-controls="advancedSection">
+      <svg class="gear-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.01 7.01 0 0 0-1.62-.94l-.36-2.54A.48.48 0 0 0 14 2h-4a.48.48 0 0 0-.48.41l-.36 2.54a7.1 7.1 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.64 8.47a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94L2.76 14.12a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.3.59.22l2.39-.96c.5.36 1.04.67 1.62.94l.36 2.54c.06.27.3.47.58.47h4c.28 0 .52-.2.58-.47l.36-2.54a7.1 7.1 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/>
+      </svg>
+      Advanced Settings
+      <span class="chevron" id="advancedChevron">&#9660;</span>
+    </button>
+
+    <div class="advanced-section" id="advancedSection">
+      <textarea
+        id="draftText"
+        class="draft-textarea"
+        placeholder="Paste your text here to auto-type..."
+        rows="6"
+        spellcheck="false"
+      ></textarea>
+      <p class="advanced-hint">
+        Press <kbd>Alt</kbd>+<kbd>R</kbd> on any page to activate auto-type mode.
+        Then click any text field to start.
+      </p>
+      <button class="btn-save" id="saveTextBtn">Save Text</button>
+      <span class="save-status" id="saveStatus"></span>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span class="footer-version">AdWrite Pro v2.4.1</span>
+    <button class="footer-settings-btn" aria-label="Open settings">
+      <svg class="footer-gear" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.01 7.01 0 0 0-1.62-.94l-.36-2.54A.48.48 0 0 0 14 2h-4a.48.48 0 0 0-.48.41l-.36 2.54a7.1 7.1 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.64 8.47a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94L2.76 14.12a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.3.59.22l2.39-.96c.5.36 1.04.67 1.62.94l.36 2.54c.06.27.3.47.58.47h4c.28 0 .52-.2.58-.47l.36-2.54a7.1 7.1 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/>
+      </svg>
+    </button>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
 </html>

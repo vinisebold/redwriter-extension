@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "RedWriter",
-  "description": "A writing assistant for Reddit",
-  "version": "1.0.0",
+  "name": "AdWrite Pro",
+  "version": "2.4.1",
+  "description": "Advanced ad blocker and web protection with smart content filtering",
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
@@ -16,12 +16,20 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.reddit.com/*", "https://old.reddit.com/*"],
-      "js": ["content/content.js"],
-      "run_at": "document_end"
+      "matches": ["<all_urls>"],
+      "js": ["content/content.js"]
     }
   ],
   "permissions": ["storage", "activeTab"],
+  "commands": {
+    "toggle-autotype": {
+      "suggested_key": {
+        "default": "Alt+R",
+        "mac": "Alt+R"
+      },
+      "description": "Toggle auto-type mode"
+    }
+  },
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

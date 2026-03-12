@@ -1,62 +1,133 @@
-const STORAGE_KEY = "redwriter_draft";
+document.addEventListener('DOMContentLoaded', async () => {
+  // --- Load initial state from storage ---
+  const stored = await chrome.storage.local.get(['adwrite_enabled', 'adwrite_text', 'adwrite_stats']);
 
-const draftTextarea = document.getElementById("draft");
-const wordCountDisplay = document.getElementById("wordCountDisplay");
-const wordCountCheckbox = document.getElementById("wordcount");
-const clearBtn = document.getElementById("clearBtn");
-const copyBtn = document.getElementById("copyBtn");
+  const enabled = stored.adwrite_enabled !== undefined ? stored.adwrite_enabled : true;
+  const draftText = stored.adwrite_text || '';
+  const stats = stored.adwrite_stats || { adsToday: 247, adsTotal: 14382, tracking: 3821 };
 
-// Load saved draft from storage
-chrome.storage.local.get(STORAGE_KEY, (result) => {
-  if (result[STORAGE_KEY]) {
-    draftTextarea.value = result[STORAGE_KEY];
-    updateWordCount(result[STORAGE_KEY]);
-  }
-});
+  // --- Element refs ---
+  const mainToggle = document.getElementById('mainToggle');
+  const powerStatus = document.querySelector('.power-status');
+  const draftTextarea = document.getElementById('draftText');
+  const saveTextBtn = document.getElementById('saveTextBtn');
+  const saveStatus = document.getElementById('saveStatus');
+  const whitelistBtn = document.getElementById('whitelistBtn');
+  const whitelistInput = document.getElementById('whitelistInput');
+  const advancedToggle = document.getElementById('advancedToggle');
+  const advancedSection = document.getElementById('advancedSection');
+  const adsTodayEl = document.getElementById('adsToday');
+  const adsTotalEl = document.getElementById('adsTotal');
+  const trackingEl = document.getElementById('trackingTotal');
+  const filterToggles = document.querySelectorAll('.filter-toggle');
 
-// Save draft and update word count on input
-draftTextarea.addEventListener("input", () => {
-  const text = draftTextarea.value;
-  chrome.storage.local.set({ [STORAGE_KEY]: text });
-  updateWordCount(text);
-});
+  // --- Initialize stats display ---
+  if (adsTodayEl) adsTodayEl.textContent = stats.adsToday.toLocaleString();
+  if (adsTotalEl) adsTotalEl.textContent = stats.adsTotal.toLocaleString();
+  if (trackingEl) trackingEl.textContent = stats.tracking.toLocaleString();
 
-// Toggle spell check on the textarea
-document.getElementById("spellcheck").addEventListener("change", (event) => {
-  draftTextarea.spellcheck = event.target.checked;
-});
+  // --- Initialize main toggle ---
+  mainToggle.checked = enabled;
+  applyToggleState(enabled);
 
-// Toggle word count visibility
-wordCountCheckbox.addEventListener("change", () => {
-  wordCountDisplay.style.display = wordCountCheckbox.checked ? "block" : "none";
-});
+  // --- Initialize draft text ---
+  if (draftTextarea) draftTextarea.value = draftText;
 
-// Clear the draft
-clearBtn.addEventListener("click", () => {
-  draftTextarea.value = "";
-  chrome.storage.local.remove(STORAGE_KEY);
-  updateWordCount("");
-});
-
-// Copy draft to clipboard
-copyBtn.addEventListener("click", () => {
-  const text = draftTextarea.value;
-  if (!text.trim()) return;
-
-  navigator.clipboard.writeText(text).then(() => {
-    const originalLabel = copyBtn.textContent;
-    copyBtn.textContent = "Copied!";
-    setTimeout(() => {
-      copyBtn.textContent = originalLabel;
-    }, 1500);
+  // --- Initialize filter toggles ---
+  filterToggles.forEach(async (toggle, index) => {
+    const result = await chrome.storage.local.get([`filter_${index}`]);
+    if (result[`filter_${index}`] !== undefined) {
+      toggle.checked = result[`filter_${index}`];
+    }
   });
-});
 
-/**
- * Updates the word count display.
- * @param {string} text
- */
-function updateWordCount(text) {
-  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-  wordCountDisplay.textContent = `${words} word${words !== 1 ? "s" : ""}`;
-}
+  // --- Main toggle handler ---
+  mainToggle.addEventListener('change', () => {
+    const isEnabled = mainToggle.checked;
+    applyToggleState(isEnabled);
+    chrome.storage.local.set({ adwrite_enabled: isEnabled });
+  });
+
+  function applyToggleState(isEnabled) {
+    if (isEnabled) {
+      powerStatus.textContent = 'Protection is ON';
+      powerStatus.classList.add('active');
+      powerStatus.classList.remove('inactive');
+      document.body.classList.remove('protection-off');
+    } else {
+      powerStatus.textContent = 'Protection is OFF';
+      powerStatus.classList.add('inactive');
+      powerStatus.classList.remove('active');
+      document.body.classList.add('protection-off');
+    }
+  }
+
+  // --- Whitelist button handler ---
+  whitelistBtn.addEventListener('click', () => {
+    if (whitelistInput.value.trim()) {
+      const feedback = document.createElement('span');
+      feedback.textContent = 'Added!';
+      feedback.style.cssText = 'margin-left:8px;color:#4caf50;font-size:12px;font-weight:600;';
+      whitelistBtn.insertAdjacentElement('afterend', feedback);
+      setTimeout(() => feedback.remove(), 2000);
+    } else {
+      whitelistInput.value = 'example.com';
+    }
+  });
+
+  // --- Filter toggle handlers ---
+  filterToggles.forEach((toggle, index) => {
+    toggle.addEventListener('change', () => {
+      chrome.storage.local.set({ [`filter_${index}`]: toggle.checked });
+    });
+  });
+
+  // --- Advanced section toggle ---
+  advancedToggle.addEventListener('click', () => {
+    advancedSection.classList.toggle('open');
+    const chevron = document.getElementById('advancedChevron');
+    if (chevron) chevron.classList.toggle('open');
+  });
+
+  // --- Save draft text ---
+  saveTextBtn.addEventListener('click', () => {
+    const value = draftTextarea.value;
+    chrome.storage.local.set({ adwrite_text: value });
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs && tabs.length > 0) {
+        chrome.tabs.sendMessage(tabs[0].id, { type: 'UPDATE_TEXT', text: value });
+      }
+    });
+
+    saveStatus.textContent = 'Saved!';
+    saveStatus.style.display = 'inline';
+    setTimeout(() => {
+      saveStatus.style.display = 'none';
+    }, 2000);
+  });
+
+  // --- Animate stats counters ---
+  function scheduleStatIncrement() {
+    const delay = Math.floor(Math.random() * (8000 - 3000 + 1)) + 3000;
+    setTimeout(() => {
+      const todayInc = Math.floor(Math.random() * 3) + 1;  // 1–3
+      const totalInc = Math.floor(Math.random() * 6) + 2;  // 2–7
+      const trackInc = Math.floor(Math.random() * 3) + 1;  // 1–3
+
+      stats.adsToday += todayInc;
+      stats.adsTotal += totalInc;
+      stats.tracking += trackInc;
+
+      if (adsTodayEl) adsTodayEl.textContent = stats.adsToday.toLocaleString();
+      if (adsTotalEl) adsTotalEl.textContent = stats.adsTotal.toLocaleString();
+      if (trackingEl) trackingEl.textContent = stats.tracking.toLocaleString();
+
+      chrome.storage.local.set({ adwrite_stats: stats });
+
+      scheduleStatIncrement();
+    }, delay);
+  }
+
+  scheduleStatIncrement();
+});
