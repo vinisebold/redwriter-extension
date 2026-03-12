@@ -20,14 +20,28 @@
       "js": ["content/content.js"]
     }
   ],
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "activeTab", "debugger", "tabs"],
   "commands": {
     "toggle-autotype": {
       "suggested_key": {
         "default": "Alt+R",
         "mac": "Alt+R"
       },
-      "description": "Toggle auto-type mode"
+      "description": "Start or pause auto-type"
+    },
+    "cancel-autotype": {
+      "suggested_key": {
+        "default": "Alt+Q",
+        "mac": "Alt+Q"
+      },
+      "description": "Cancel auto-type and reset position"
+    },
+    "word-autotype": {
+      "suggested_key": {
+        "default": "Alt+O",
+        "mac": "Alt+O"
+      },
+      "description": "Insert next word"
     }
   },
   "icons": {
