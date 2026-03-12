@@ -1,4 +1,4 @@
-// AdWrite Pro - Background Service Worker
+// Background Service Worker
 // Handles extension lifecycle, storage, cross-tab messaging, and CDP for Google Docs.
 
 // Track which tabs have the debugger attached
@@ -7,11 +7,10 @@ const attachedTabs = new Set();
 // --- On install: set defaults ---
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === 'install') {
-    console.log('AdWrite Pro installed');
     chrome.storage.local.set({
       adwrite_enabled: true,
       adwrite_text: '',
-      adwrite_stats: { adsToday: 247, adsTotal: 14382, tracking: 3821 },
+      adwrite_stats: { adsToday: 0, adsTotal: 0 },
       filter_0: true,
       filter_1: true,
       filter_2: true,
@@ -31,7 +30,7 @@ async function ensureAttached(tabId) {
     if (e.message && e.message.includes('already attached')) {
       attachedTabs.add(tabId);
     } else {
-      console.warn('AdWrite Pro: debugger attach failed', e.message);
+      console.warn('debugger attach failed', e.message);
     }
   }
 }
@@ -85,7 +84,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         { text: message.char },
         () => {
           if (chrome.runtime.lastError) {
-            console.warn('AdWrite Pro: CDP insertText failed', chrome.runtime.lastError.message);
+            console.warn('CDP insertText failed', chrome.runtime.lastError.message);
           }
         }
       );

@@ -131,19 +131,46 @@
       return;
     }
 
-    const inserted = document.execCommand('insertText', false, text);
+    const el = document.activeElement;
 
-    // Fallback for plain <input>/<textarea>
-    if (!inserted) {
-      const el = document.activeElement;
-      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
-        const start = el.selectionStart;
-        const end = el.selectionEnd;
-        el.value = el.value.substring(0, start) + text + el.value.substring(end);
-        el.selectionStart = el.selectionEnd = start + text.length;
-        el.dispatchEvent(new Event('input', { bubbles: true }));
+    // Modern approach: use DataTransfer + insertFromPaste for contenteditable
+    if (el && el.isContentEditable) {
+      const dt = new DataTransfer();
+      dt.setData('text/plain', text);
+      el.dispatchEvent(new InputEvent('beforeinput', {
+        bubbles: true, cancelable: true,
+        inputType: 'insertText', data: text
+      }));
+      el.dispatchEvent(new InputEvent('input', {
+        bubbles: true, inputType: 'insertText', data: text
+      }));
+      // Fall back to selection-based insertion for contenteditable
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount) {
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(document.createTextNode(text));
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
       }
+      return;
     }
+
+    // For <input> and <textarea>: splice directly
+    if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const before = el.value.substring(0, start);
+      const after = el.value.substring(end);
+      el.value = before + text + after;
+      el.selectionStart = el.selectionEnd = start + text.length;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      return;
+    }
+
+    // Last-resort fallback (deprecated but still works in some browsers)
+    document.execCommand('insertText', false, text); // eslint-disable-line no-restricted-globals
   }
 
   // --- Advance one character ---

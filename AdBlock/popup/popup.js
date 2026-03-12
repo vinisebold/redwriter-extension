@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   advancedToggle.addEventListener('click', () => {
-    const open = advancedSection.classList.toggle('open');
+    advancedSection.classList.toggle('open');
   });
 
   saveTextBtn.addEventListener('click', async () => {
@@ -57,7 +57,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (!tabs || !tabs.length) return;
-      chrome.tabs.sendMessage(tabs[0].id, { type: 'UPDATE_TEXT', text: value });
+      chrome.tabs.sendMessage(tabs[0].id, { type: 'UPDATE_TEXT', text: value }, () => {
+        void chrome.runtime.lastError; // suppress "no receivers" error when content script is absent
+      });
     });
 
     saveStatus.textContent = 'Saved';
