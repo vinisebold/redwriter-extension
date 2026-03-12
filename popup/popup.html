@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RedWriter</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1 class="title">RedWriter</h1>
+        <p class="subtitle">Your Reddit writing assistant</p>
+      </header>
+
+      <main class="main">
+        <section class="section">
+          <label class="label" for="draft">Draft</label>
+          <textarea
+            id="draft"
+            class="textarea"
+            placeholder="Write your Reddit post or comment here..."
+            rows="8"
+          ></textarea>
+        </section>
+
+        <section class="section">
+          <label class="label">Options</label>
+          <div class="option-group">
+            <label class="option">
+              <input type="checkbox" id="spellcheck" checked />
+              <span>Spell check</span>
+            </label>
+            <label class="option">
+              <input type="checkbox" id="wordcount" checked />
+              <span>Show word count</span>
+            </label>
+          </div>
+          <p id="wordCountDisplay" class="word-count">0 words</p>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <button id="clearBtn" class="btn btn-secondary">Clear</button>
+        <button id="copyBtn" class="btn btn-primary">Copy to clipboard</button>
+      </footer>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
