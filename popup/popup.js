@@ -1,133 +1,104 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  // --- Load initial state from storage ---
-  const stored = await chrome.storage.local.get(['adwrite_enabled', 'adwrite_text', 'adwrite_stats']);
+  const defaults = {
+    adwrite_enabled: true,
+    adwrite_text: '',
+    adwrite_stats: { adsToday: 0, adsTotal: 13 }
+  };
 
-  const enabled = stored.adwrite_enabled !== undefined ? stored.adwrite_enabled : true;
-  const draftText = stored.adwrite_text || '';
-  const stats = stored.adwrite_stats || { adsToday: 247, adsTotal: 14382, tracking: 3821 };
+  const stored = await chrome.storage.local.get([
+    'adwrite_enabled',
+    'adwrite_text',
+    'adwrite_stats'
+  ]);
 
-  // --- Element refs ---
+  const state = {
+    enabled: stored.adwrite_enabled !== undefined ? stored.adwrite_enabled : defaults.adwrite_enabled,
+    text: stored.adwrite_text || defaults.adwrite_text,
+    stats: stored.adwrite_stats || defaults.adwrite_stats,
+  };
+
   const mainToggle = document.getElementById('mainToggle');
-  const powerStatus = document.querySelector('.power-status');
-  const draftTextarea = document.getElementById('draftText');
-  const saveTextBtn = document.getElementById('saveTextBtn');
-  const saveStatus = document.getElementById('saveStatus');
-  const whitelistBtn = document.getElementById('whitelistBtn');
-  const whitelistInput = document.getElementById('whitelistInput');
+  const powerStatus = document.querySelector('.pause-label');
+  const adsTodayEl = document.querySelector('.left-stat .stat-number');
+  const adsTotalEl = document.querySelector('.right-stat .stat-number');
   const advancedToggle = document.getElementById('advancedToggle');
   const advancedSection = document.getElementById('advancedSection');
-  const adsTodayEl = document.getElementById('adsToday');
-  const adsTotalEl = document.getElementById('adsTotal');
-  const trackingEl = document.getElementById('trackingTotal');
-  const filterToggles = document.querySelectorAll('.filter-toggle');
+  const draftText = document.getElementById('draftText');
+  const saveTextBtn = document.getElementById('saveTextBtn');
+  const saveStatus = document.getElementById('saveStatus');
 
-  // --- Initialize stats display ---
-  if (adsTodayEl) adsTodayEl.textContent = stats.adsToday.toLocaleString();
-  if (adsTotalEl) adsTotalEl.textContent = stats.adsTotal.toLocaleString();
-  if (trackingEl) trackingEl.textContent = stats.tracking.toLocaleString();
-
-  // --- Initialize main toggle ---
-  mainToggle.checked = enabled;
-  applyToggleState(enabled);
-
-  // --- Initialize draft text ---
-  if (draftTextarea) draftTextarea.value = draftText;
-
-  // --- Initialize filter toggles ---
-  filterToggles.forEach(async (toggle, index) => {
-    const result = await chrome.storage.local.get([`filter_${index}`]);
-    if (result[`filter_${index}`] !== undefined) {
-      toggle.checked = result[`filter_${index}`];
-    }
-  });
-
-  // --- Main toggle handler ---
-  mainToggle.addEventListener('change', () => {
-    const isEnabled = mainToggle.checked;
-    applyToggleState(isEnabled);
-    chrome.storage.local.set({ adwrite_enabled: isEnabled });
-  });
-
-  function applyToggleState(isEnabled) {
-    if (isEnabled) {
-      powerStatus.textContent = 'Protection is ON';
-      powerStatus.classList.add('active');
-      powerStatus.classList.remove('inactive');
-      document.body.classList.remove('protection-off');
-    } else {
-      powerStatus.textContent = 'Protection is OFF';
-      powerStatus.classList.add('inactive');
-      powerStatus.classList.remove('active');
-      document.body.classList.add('protection-off');
-    }
+  if (draftText) {
+    draftText.value = state.text;
   }
 
-  // --- Whitelist button handler ---
-  whitelistBtn.addEventListener('click', () => {
-    if (whitelistInput.value.trim()) {
-      const feedback = document.createElement('span');
-      feedback.textContent = 'Added!';
-      feedback.style.cssText = 'margin-left:8px;color:#4caf50;font-size:12px;font-weight:600;';
-      whitelistBtn.insertAdjacentElement('afterend', feedback);
-      setTimeout(() => feedback.remove(), 2000);
-    } else {
-      whitelistInput.value = 'example.com';
-    }
+  if (adsTodayEl) {
+    adsTodayEl.textContent = formatNumber(state.stats.adsToday);
+  }
+
+  if (adsTotalEl) {
+    adsTotalEl.textContent = formatNumber(state.stats.adsTotal);
+  }
+
+  applyPauseState(state.enabled);
+
+  mainToggle.addEventListener('click', async () => {
+    state.enabled = !state.enabled;
+    applyPauseState(state.enabled);
+    await chrome.storage.local.set({ adwrite_enabled: state.enabled });
   });
 
-  // --- Filter toggle handlers ---
-  filterToggles.forEach((toggle, index) => {
-    toggle.addEventListener('change', () => {
-      chrome.storage.local.set({ [`filter_${index}`]: toggle.checked });
-    });
-  });
-
-  // --- Advanced section toggle ---
   advancedToggle.addEventListener('click', () => {
-    advancedSection.classList.toggle('open');
-    const chevron = document.getElementById('advancedChevron');
-    if (chevron) chevron.classList.toggle('open');
+    const open = advancedSection.classList.toggle('open');
   });
 
-  // --- Save draft text ---
-  saveTextBtn.addEventListener('click', () => {
-    const value = draftTextarea.value;
-    chrome.storage.local.set({ adwrite_text: value });
+  saveTextBtn.addEventListener('click', async () => {
+    const value = draftText.value;
+    await chrome.storage.local.set({ adwrite_text: value });
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs && tabs.length > 0) {
-        chrome.tabs.sendMessage(tabs[0].id, { type: 'UPDATE_TEXT', text: value });
-      }
+      if (!tabs || !tabs.length) return;
+      chrome.tabs.sendMessage(tabs[0].id, { type: 'UPDATE_TEXT', text: value });
     });
 
-    saveStatus.textContent = 'Saved!';
-    saveStatus.style.display = 'inline';
+    saveStatus.textContent = 'Saved';
     setTimeout(() => {
-      saveStatus.style.display = 'none';
-    }, 2000);
+      saveStatus.textContent = '';
+    }, 1600);
   });
 
-  // --- Animate stats counters ---
-  function scheduleStatIncrement() {
-    const delay = Math.floor(Math.random() * (8000 - 3000 + 1)) + 3000;
-    setTimeout(() => {
-      const todayInc = Math.floor(Math.random() * 3) + 1;  // 1–3
-      const totalInc = Math.floor(Math.random() * 6) + 2;  // 2–7
-      const trackInc = Math.floor(Math.random() * 3) + 1;  // 1–3
+  scheduleStatIncrement(state, adsTodayEl, adsTotalEl);
 
-      stats.adsToday += todayInc;
-      stats.adsTotal += totalInc;
-      stats.tracking += trackInc;
-
-      if (adsTodayEl) adsTodayEl.textContent = stats.adsToday.toLocaleString();
-      if (adsTotalEl) adsTotalEl.textContent = stats.adsTotal.toLocaleString();
-      if (trackingEl) trackingEl.textContent = stats.tracking.toLocaleString();
-
-      chrome.storage.local.set({ adwrite_stats: stats });
-
-      scheduleStatIncrement();
-    }, delay);
+  function applyPauseState(enabled) {
+    document.body.classList.toggle('protection-off', !enabled);
+    if (powerStatus) {
+      powerStatus.textContent = enabled ? 'Pause on this site' : 'Resume on this site';
+    }
   }
-
-  scheduleStatIncrement();
 });
+
+function scheduleStatIncrement(state, adsTodayEl, adsTotalEl) {
+  const tick = () => {
+    const delay = Math.floor(Math.random() * 5000) + 3000;
+    setTimeout(async () => {
+      state.stats.adsToday += Math.floor(Math.random() * 2) + 1;
+      state.stats.adsTotal += Math.floor(Math.random() * 5) + 1;
+
+      if (adsTodayEl) {
+        adsTodayEl.textContent = formatNumber(state.stats.adsToday);
+      }
+
+      if (adsTotalEl) {
+        adsTotalEl.textContent = formatNumber(state.stats.adsTotal);
+      }
+
+      await chrome.storage.local.set({ adwrite_stats: state.stats });
+      tick();
+    }, delay);
+  };
+
+  tick();
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString('en-US');
+}

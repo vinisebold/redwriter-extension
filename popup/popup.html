@@ -3,152 +3,89 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AdWrite Pro</title>
+  <title>AdBlock</title>
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
-
-  <!-- HEADER -->
-  <header class="header">
-    <div class="header-logo">
-      <svg class="shield-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"/>
-        <path class="shield-check" d="M9 12l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      </svg>
-      <div class="header-text">
-        <span class="app-name">AdWrite Pro</span>
-        <span class="app-tagline">Advanced Ad Blocker &amp; Web Protection</span>
+  <div class="popup-shell">
+    <header class="topbar">
+      <div class="brand-wrap">
+         <img class="brand-logo" src="../adblock_full.svg" alt="AdBlock Logo" />
       </div>
-    </div>
-  </header>
-
-  <!-- MAIN TOGGLE -->
-  <section class="power-section">
-    <div class="power-toggle-container">
-      <label class="toggle-switch power-toggle" for="mainToggle" aria-label="Toggle protection">
-        <input type="checkbox" id="mainToggle" checked />
-        <span class="slider"></span>
-      </label>
-      <p class="power-status active" id="powerStatus">Protection is ON</p>
-    </div>
-  </section>
-
-  <!-- STATS -->
-  <section class="stats-section">
-    <div class="stats-grid">
-      <div class="stat-item">
-        <span class="stat-value" id="adsToday">247</span>
-        <span class="stat-label">Ads blocked today</span>
+      <div class="topbar-actions">
+         <button class="icon-btn" type="button" aria-label="Help">
+           <svg viewBox="0 0 24 24" fill="#969696"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+         </button>
+         <button class="icon-btn icon-btn-gear" type="button" id="advancedToggle" aria-label="Settings">
+           <svg viewBox="0 0 24 24" fill="#969696"><path d="M19.14 12.94c.04-.31.06-.62.06-.94s-.02-.63-.07-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.62 7.62 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.57.22-1.11.53-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.72 8.48a.5.5 0 0 0 .12.64l2.03 1.58c-.05.31-.07.63-.07.94s.02.63.07.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.31.6.22l2.39-.96c.5.41 1.05.72 1.62.94l.36 2.54c.04.24.25.42.49.42h3.8c.24 0 .45-.18.49-.42l.36-2.54c.57-.22 1.12-.53 1.62-.94l2.39.96c.22.09.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"/></svg>
+         </button>
+         <button class="icon-btn dots-btn" type="button" aria-label="More options">
+           <svg viewBox="0 0 24 24" fill="#969696"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+         </button>
       </div>
-      <div class="stat-item">
-        <span class="stat-value" id="adsTotal">14,382</span>
-        <span class="stat-label">Ads blocked total</span>
+    </header>
+
+    <main class="panel">
+      <!-- Hidden Advanced Section for the extension's real functionality -->
+      <section class="advanced-section" id="advancedSection">
+        <label class="advanced-label" for="draftText">Notes</label>
+        <textarea id="draftText" rows="4" placeholder="Alt+R play/pause  ·  Alt+O next word  ·  Alt+Q cancel" spellcheck="false"></textarea>
+        <div class="advanced-actions">
+          <button class="btn-save" id="saveTextBtn" type="button">Save</button>
+          <span class="save-status" id="saveStatus"></span>
+        </div>
+      </section>
+
+      <div class="main-content">
+        <article class="feature-card feature-card-stats">
+          <div class="feature-header">
+            <div class="feature-title-wrap">
+              <span class="feature-icon dark-hand" aria-hidden="true">
+                <svg viewBox="0 0 79 80"><path fill-rule="evenodd" fill="#424242" d="m21.41 1.74l-19.67 19.67c-1.12 1.11-1.74 2.62-1.74 4.19v27.82c0 1.57 0.62 3.08 1.74 4.19l19.67 19.67c1.11 1.11 2.61 1.73 4.19 1.73h27.82c1.57 0 3.08-0.62 4.19-1.73l19.67-19.67c1.11-1.11 1.73-2.62 1.73-4.19v-27.82c0-1.57-0.62-3.08-1.73-4.19l-19.67-19.67c-1.11-1.12-2.62-1.74-4.19-1.74h-27.82c-1.58 0-3.08 0.62-4.19 1.74z"/><path fill-rule="evenodd" fill="#efefef" d="m38.56 68.15c13.09 0 16.2-12.01 16.2-12.01l7.51-21.58c0 0 0.68-2.24 0.56-2.27-7-1.31-8.49 3.62-8.49 3.62 0 0-2.69 6.99-3.1 6.99-0.42 0-0.47-0.52-0.47-0.52v-25.09c0 0 0.13-3.24-3.19-3.24-3.33 0-3.16 3.25-3.16 3.25l0.01 18.53c0 0 0.04 0.75-0.58 0.75-0.55 0-0.52-0.72-0.52-0.72v-22.34c0 0 0.2-3.64-3.16-3.64-3.36 0-3.18 3.67-3.18 3.67l-0.03 22.03c0 0 0.04 0.68-0.51 0.68-0.52 0-0.5-0.67-0.5-0.67v-18.47c0 0 0.19-3.76-3.24-3.76-3.36 0-3.18 3.82-3.18 3.82l-0.03 19.51c0 0 0.06 0.57-0.46 0.57-0.56 0-0.55-0.57-0.55-0.57l-0.03-11.79c0 0 0.03-3.27-2.79-3.27-3.01 0-2.95 3.27-2.95 3.27v25.45c0.02 0-0.76 17.8 15.84 17.8z"/></svg>
+              </span>
+              <span class="feature-title">Block Ads</span>
+            </div>
+          </div>
+          <div class="feature-divider"></div>
+          <div class="stats-row">
+            <div class="stat-block left-stat">
+              <span class="stat-number">0</span>
+              <span class="stat-text">on this page</span>
+            </div>
+            <div class="stat-block right-stat">
+              <span class="stat-number">13</span>
+              <span class="stat-text">in total</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="feature-card row-card">
+          <div class="feature-title-wrap">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="#424242"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </span>
+            <span class="feature-title">Skip Cookie Walls</span>
+          </div>
+          <button class="btn-yellow" type="button">Learn More</button>
+        </article>
+
+        <article class="feature-card row-card">
+          <div class="feature-title-wrap">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="#424242"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </span>
+            <span class="feature-title">Block Distractions</span>
+          </div>
+          <button class="btn-yellow" type="button">Learn More</button>
+        </article>
+
+        <button class="pause-button" id="mainToggle" type="button">
+          <svg class="pause-icon" viewBox="0 0 24 24" width="16" height="16" fill="#444"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          <span class="pause-label">Pause on this site</span>
+        </button>
       </div>
-      <div class="stat-item">
-        <span class="stat-value" id="trackingTotal">3,821</span>
-        <span class="stat-label">Tracking blocked</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-value" id="bandwidth">128 MB</span>
-        <span class="stat-label">Bandwidth saved</span>
-      </div>
-    </div>
-  </section>
-
-  <hr class="divider" />
-
-  <!-- FILTER LISTS -->
-  <section class="filter-section">
-    <h2 class="section-title">Filter Lists</h2>
-
-    <div class="filter-row">
-      <span class="filter-name">EasyList</span>
-      <label class="toggle-switch" aria-label="Toggle EasyList">
-        <input type="checkbox" class="filter-toggle" checked />
-        <span class="slider"></span>
-      </label>
-    </div>
-
-    <div class="filter-row">
-      <span class="filter-name">EasyPrivacy</span>
-      <label class="toggle-switch" aria-label="Toggle EasyPrivacy">
-        <input type="checkbox" class="filter-toggle" checked />
-        <span class="slider"></span>
-      </label>
-    </div>
-
-    <div class="filter-row">
-      <span class="filter-name">Malware Domains</span>
-      <label class="toggle-switch" aria-label="Toggle Malware Domains">
-        <input type="checkbox" class="filter-toggle" checked />
-        <span class="slider"></span>
-      </label>
-    </div>
-
-    <div class="filter-row">
-      <span class="filter-name">Social Media Trackers</span>
-      <label class="toggle-switch" aria-label="Toggle Social Media Trackers">
-        <input type="checkbox" class="filter-toggle" />
-        <span class="slider"></span>
-      </label>
-    </div>
-  </section>
-
-  <hr class="divider" />
-
-  <!-- WHITELIST -->
-  <section class="whitelist-section">
-    <h2 class="section-title">Whitelist</h2>
-    <div class="whitelist-row">
-      <button class="btn-whitelist" id="whitelistBtn">Whitelist this site</button>
-      <input
-        type="text"
-        class="whitelist-input"
-        id="whitelistInput"
-        placeholder="e.g. example.com"
-        aria-label="Enter a site to whitelist"
-      />
-    </div>
-  </section>
-
-  <hr class="divider" />
-
-  <!-- ADVANCED SETTINGS (collapsible) -->
-  <section class="advanced-wrap">
-    <button class="advanced-trigger" id="advancedToggle" aria-expanded="false" aria-controls="advancedSection">
-      <svg class="gear-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.01 7.01 0 0 0-1.62-.94l-.36-2.54A.48.48 0 0 0 14 2h-4a.48.48 0 0 0-.48.41l-.36 2.54a7.1 7.1 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.64 8.47a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94L2.76 14.12a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.3.59.22l2.39-.96c.5.36 1.04.67 1.62.94l.36 2.54c.06.27.3.47.58.47h4c.28 0 .52-.2.58-.47l.36-2.54a7.1 7.1 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/>
-      </svg>
-      Advanced Settings
-      <span class="chevron" id="advancedChevron">&#9660;</span>
-    </button>
-
-    <div class="advanced-section" id="advancedSection">
-      <textarea
-        id="draftText"
-        class="draft-textarea"
-        placeholder="Paste your text here to auto-type..."
-        rows="6"
-        spellcheck="false"
-      ></textarea>
-      <p class="advanced-hint">
-        Press <kbd>Alt</kbd>+<kbd>R</kbd> on any page to activate auto-type mode.
-        Then click any text field to start.
-      </p>
-      <button class="btn-save" id="saveTextBtn">Save Text</button>
-      <span class="save-status" id="saveStatus"></span>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="footer">
-    <span class="footer-version">AdWrite Pro v2.4.1</span>
-    <button class="footer-settings-btn" aria-label="Open settings">
-      <svg class="footer-gear" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.01 7.01 0 0 0-1.62-.94l-.36-2.54A.48.48 0 0 0 14 2h-4a.48.48 0 0 0-.48.41l-.36 2.54a7.1 7.1 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.64 8.47a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94L2.76 14.12a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.3.59.22l2.39-.96c.5.36 1.04.67 1.62.94l.36 2.54c.06.27.3.47.58.47h4c.28 0 .52-.2.58-.47l.36-2.54a7.1 7.1 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/>
-      </svg>
-    </button>
-  </footer>
+    </main>
+  </div>
 
   <script src="popup.js"></script>
 </body>
